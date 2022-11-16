@@ -1,0 +1,303 @@
+
+module.exports = class SimpleAnalytics {
+    //adds the total number of losses, wins, trades, buys, sells to the return object  
+    accountStats(arr, returnObj) {
+
+        let { winCount, lossCount, buyCount, sellCount, } = this.frequencyCheck(arr)
+
+        returnObj.balance = arr[arr.length - 1].balance || 0
+        returnObj.losses = lossCount
+        returnObj.wins = winCount
+        returnObj.percentageLosses = this.toPercentage(lossCount, arr.length)
+        returnObj.percentageWins = this.toPercentage(winCount, arr.length)
+        returnObj.totalTrades = arr.length
+        returnObj.ratio = (winCount / lossCount).toFixed(2)
+        returnObj.winRate = this.toPercentage(winCount, arr.length)
+        returnObj.buys = this.toPercentage(buyCount, arr.length)
+        returnObj.sells = this.toPercentage(sellCount, arr.length)
+
+        return returnObj
+
+    }
+
+    //adds best tradingDay, bestTradingDayPercentage, mostTradedn bestCurrency and the number of trades with no mistakes to the return object
+    accountAnalysis(arr, returnObj) {
+
+        let { noMistakesCount, noMistakesWins, assets } = this.frequencyCheck(arr)
+
+        let assetFrequencyData = this.checkAssetFrequency(assets, arr),
+            dailyWins = this.checkDailyWin(arr),
+            {
+                keysSorted, keySortedBestCurr, bestCurrPercentage,
+                secBestCurrPercentage, mostTradedPercentage, secMostTradedPercentage
+            } = this.getMostTradedAssetAndBestCurr(assetFrequencyData, arr.length);
+
+        let sortedBestTradingDay = this.getBestTradingDay(dailyWins),
+            bestTradingDayPercentage = ((dailyWins[sortedBestTradingDay[0]]['winFreq'] / dailyWins[sortedBestTradingDay[0]]['tradeFreq']) * 100).toFixed(0).toString().concat('%')
+
+        returnObj.bestTradingDay = this.convertNumToDay(sortedBestTradingDay[0])
+        returnObj.bestTradingDayPercentage = bestTradingDayPercentage
+        returnObj.mostTraded = keysSorted[0]
+        returnObj.mostTradedPercentage = mostTradedPercentage
+        returnObj.secMostTraded = keysSorted[1]
+        returnObj.secMostTradedPercentage = secMostTradedPercentage
+        returnObj.bestCurr = keySortedBestCurr[0]
+        returnObj.bestCurrPercentage = bestCurrPercentage
+        returnObj.secBestCurr = keySortedBestCurr[1]
+        returnObj.secBestCurrPercentage = secBestCurrPercentage
+        returnObj.nomistakes = this.toPercentage(noMistakesCount, arr.length)
+        returnObj.noMistakesWinsPercentage = this.toPercentage(noMistakesWins, arr.length)
+
+        return returnObj
+
+    }
+
+    //returns an array of sorted days based on their wins per total number of trades on that day 
+    getBestTradingDay(dailyWins) {
+
+        let sortedBestTradingDay = Object.keys(dailyWins).sort(function (a, b) {
+
+            return (dailyWins[b]['winFreq'] / dailyWins[b]['tradeFreq']) - (dailyWins[a]['winFreq'] / dailyWins[a]['tradeFreq'])
+        })
+
+        if (!dailyWins[sortedBestTradingDay[0]]['winFreq'] / dailyWins[sortedBestTradingDay[0]]['tradeFreq']) {
+            [sortedBestTradingDay[1], sortedBestTradingDay[0]] = [sortedBestTradingDay[0], sortedBestTradingDay[1]]
+        }
+
+        return sortedBestTradingDay
+    }
+
+    //calculates the total number of wins, losses, sells, buys, trades with and without mistakes   
+    frequencyCheck(arr) {
+
+        let [winCount, lossCount, buyCount, sellCount, noMistakesCount, noMistakesWins] = [0, 0, 0, 0, 0, 0]
+        const assets = new Set()
+
+        let days = { 0: "Sun", 1: "Mon", 2: "Tue", 3: "Wed", 4: "Thur", 5: "Fri", 6: "Sat" },
+            dayCount = { Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thur: 0, Fri: 0, Sat: 0 }
+
+        arr.forEach((tradeObj) => {
+
+            if (tradeObj.result.toLowerCase() == "win") {
+                winCount += 1;
+            }
+            if (tradeObj.result.toLowerCase() == "loss") {
+                lossCount += 1;
+            }
+            if (tradeObj.direction.toLowerCase() == "buy") {
+                buyCount += 1;
+            }
+            if (tradeObj.direction.toLowerCase() == "sell") {
+                sellCount += 1;
+            }
+            //increment the dayCount object to find the total trades made on each day
+            if (days[tradeObj.date.getDay().toString()]) {
+                dayCount[days[tradeObj.date.getDay().toString()]] = dayCount[days[tradeObj.date.getDay().toString()]] + 1
+            }
+
+            // increment the noMistakesCount and noMistakesWins counts to find the total number of trades with no mistakes and 
+            // which amongst them were successful
+            if (tradeObj.mistakes) {
+                if (tradeObj.mistakes.toLowerCase() == "none") {
+                    noMistakesCount += 1;
+                }
+                if (tradeObj.mistakes.toLowerCase() == "none" && tradeObj.result.toLowerCase() == "win") {
+                    noMistakesWins += 1;
+                }
+            }
+            //populate the Asset set
+            if (tradeObj.instrument !== '') {
+                assets.add(tradeObj.instrument.toUpperCase())
+            }
+        })
+
+        if (lossCount === 0) {
+            lossCount = 1
+        }
+
+        return ({
+            winCount: winCount, lossCount: lossCount, buyCount: buyCount,
+            sellCount: sellCount, noMistakesCount: noMistakesCount,
+            noMistakesWins: noMistakesWins, assets: assets
+        })
+    }
+
+    getMostTradedAssetAndBestCurr(assetFrequencyData, total) {
+        let keysSorted, keySortedBestCurr, mostTradedPercentage, bestCurrPercentage, secMostTradedPercentage, secBestCurrPercentage
+
+        //get most traded asset by sorting the asset keys based on asset trade frequency
+        keysSorted = Object.keys(assetFrequencyData).sort(function (a, b) { return assetFrequencyData[b]['tradeFreq'] - assetFrequencyData[a]['tradeFreq'] })
+        mostTradedPercentage = this.toPercentage(assetFrequencyData[keysSorted[0]]['tradeFreq'], total)
+
+        //get best currency based on weighted probability
+        keySortedBestCurr = Object.keys(assetFrequencyData).sort(function (a, b) {
+            return (assetFrequencyData[b]['winFreq'] / assetFrequencyData[b]['tradeFreq']) - (assetFrequencyData[a]['winFreq'] / assetFrequencyData[a]['tradeFreq'])
+        })
+        bestCurrPercentage = ((assetFrequencyData[keySortedBestCurr[0]]['winFreq'] / assetFrequencyData[keySortedBestCurr[0]]['tradeFreq']) * 100).toString().concat('%')
+
+        //add the second most traded if it exists
+        if (Object.keys(assetFrequencyData).length > 1) {
+            secMostTradedPercentage = this.toPercentage(assetFrequencyData[keysSorted[1]]['tradeFreq'], total)
+            secBestCurrPercentage = ((assetFrequencyData[keySortedBestCurr[1]]['winFreq'] / assetFrequencyData[keySortedBestCurr[1]]['tradeFreq']) * 100).toString().concat('%')
+        }
+
+        return {
+            keysSorted: keysSorted, keySortedBestCurr: keySortedBestCurr,
+            mostTradedPercentage: mostTradedPercentage, bestCurrPercentage: bestCurrPercentage,
+            secMostTradedPercentage: secMostTradedPercentage, secBestCurrPercentage: secBestCurrPercentage
+        }
+    }
+    //converts a given number to the relevant date 
+    convertNumToDay(num) {
+
+        return num === '0' ? 'Sun' : num === '1' ? 'Mon' : num === '2' ? 'Tue' : num === '3' ? 'Wed' : num === '4' ? 'Thur' : num === '5' ? 'Fri' : 'Sat'
+    }
+
+    //Calculate the amount of times each asset has been traded and the number of wins 
+    checkDailyWin(trades) {
+
+        let days = [1, 2, 3, 4, 5]
+
+        let dayFrequency = {}
+        //to each asset in the asset arr, add an object that has a win and trade frequency counter and add it to the assetFreq obj
+        days.forEach((el) => {
+            let data = { tradeFreq: 0, winFreq: 0 }
+            dayFrequency[el] = data
+        })
+
+        //increment the counters in the assetFreq object
+        days.forEach((day) => {
+            let [tradeFreq, winFreq] = [0, 0]
+
+            trades.forEach((trade) => {
+                if (day == trade.date.getDay()) {
+                    tradeFreq += 1
+                }
+                if (day == trade.date.getDay() && trade.result.toUpperCase() === "WIN") {
+                    winFreq += 1
+                }
+
+            })
+            dayFrequency[day]['tradeFreq'] = tradeFreq;
+            dayFrequency[day]['winFreq'] = winFreq;
+        })
+        return dayFrequency
+    }
+
+    //Calculate the amount of times each asset has been traded and the number of wins 
+    checkAssetFrequency(assets, trades) {
+
+        let assetFrequency = {}
+        //to each asset in the asset arr, add an object that has a win and trade frequency counter and add it to the assetFreq obj
+        assets.forEach((el) => {
+            let data = { tradeFreq: 0, winFreq: 0 }
+            assetFrequency[el] = data
+        })
+
+        //increment the counters in the assetFreq object
+        assets.forEach((asset) => {
+            let [tradeFreq, winFreq] = [0, 0]
+
+            trades.forEach((trade) => {
+                if (asset == trade.instrument.toUpperCase()) {
+                    tradeFreq += 1
+                }
+                if (asset == trade.instrument.toUpperCase() && trade.result.toUpperCase() === "WIN") {
+                    winFreq += 1
+                }
+
+            })
+            assetFrequency[asset]['tradeFreq'] = tradeFreq;
+            assetFrequency[asset]['winFreq'] = winFreq;
+        })
+        return assetFrequency
+    }
+
+    //convert to percentage
+    toPercentage(count, total) {
+        return ((count / total) * 100).toFixed(0).toString().concat('%')
+    }
+
+    //get the number of trades executed on each day
+    getTradeDays(arr) {
+        let days = { 1: "Mon", 2: "Tue", 3: "Wed", 4: "Thur", 5: "Fri" }
+        let dayCount = { Mon: 0, Tue: 0, Wed: 0, Thur: 0, Fri: 0, total: arr.length }
+
+        //increment the dayCount values if a trade has been executed on a day that matches the day in the trades arr
+        arr.forEach((tradeObj) => {
+            if (days[tradeObj.date.getDay().toString()]) {
+                dayCount[days[tradeObj.date.getDay().toString()]] = dayCount[days[tradeObj.date.getDay().toString()]] + 1
+            }
+        })
+
+        //convert the dayCount values to percentages
+        for (const [key, value] of Object.entries(dayCount)) {
+            //console.log(`${key}: ${value}`);
+            dayCount[key] = ((value / arr.length) * 100).toFixed(0)
+        }
+
+        return dayCount
+    }
+
+    //generate the average risk and reward, win rate as well as the balance
+    getMeanRiskRew(arr) {
+        let winRate = parseInt(this.accountStats(arr, {}).winRate.slice(0, -1)),
+            { balance } = this.accountStats(arr, {}),
+            [riskCount, totalRiskCount, rewCount, totalRewCount] = [0, 0, 0, 0],
+            risk, rew;
+
+        arr.forEach((trade) => {
+            if (trade.risk && trade.reward) {
+                riskCount += trade.risk
+                rewCount += trade.reward
+                totalRiskCount += 100 //as in 100%
+                totalRewCount += 100
+            }
+        })
+        risk = Math.round(((riskCount / totalRiskCount) * 100))
+        rew = Math.round((rewCount / totalRewCount) * 100)
+
+        //return the average risk and reward, win rate as well as the balance
+        return { risk: risk, reward: rew, wLr: winRate, balance: balance }
+    }
+
+    //generate an array of 3 of the most recent trades
+    mostRecentTrades(arr) {
+
+        let returnTrades = {
+            tOneAsset: '-', tOneDate: '-', tOneResult: '-', tOneReasons: '-', tOneDirection: '-',
+            tTwoAsset: '-', tTwoDate: '-', tTwoResult: '-', tTwoReasons: '-', tTwoDirection: '-',
+            tThreeAsset: '-', tThreeDate: '-', tThreeResult: '-', tThreeReasons: '-', tThreeDirection: '-',
+        }
+
+        if (arr.length === 0) {
+            return returnTrades
+        }
+        else {
+            arr.forEach((trade, i) => {
+                if (i === arr.length - 1) {
+                    returnTrades.tOneAsset = trade.instrument
+                    returnTrades.tOneDirection = trade.direction
+                    returnTrades.tOneDate = trade.date.toString().slice(3, 16)
+                    returnTrades.tOneResult = trade.result
+                    returnTrades.tOneReasons = trade.reasons
+                }
+                else if (i === arr.length - 2) {
+                    returnTrades.tTwoAsset = trade.instrument
+                    returnTrades.tTwoDirection = trade.direction
+                    returnTrades.tTwoDate = trade.date.toString().slice(3, 16)
+                    returnTrades.tTwoResult = trade.result
+                    returnTrades.tTwoReasons = trade.reasons
+                }
+                else if (i === arr.length - 3) {
+                    returnTrades.tThreeAsset = trade.instrument
+                    returnTrades.tThreeDirection = trade.direction
+                    returnTrades.tThreeDate = trade.date.toString().slice(3, 16)
+                    returnTrades.tThreeResult = trade.result
+                    returnTrades.tThreeReasons = trade.reasons
+                }
+            })
+            return returnTrades
+        }
+    }
+}

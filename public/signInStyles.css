@@ -1,0 +1,176 @@
+body{
+    color: #dddfe2;
+}
+.logInContainer {
+    width: 100%;
+    height: 100vh;
+    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: Anton, sans-serif;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+.logo{
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 0px 40px 0px;
+    position: relative;
+    top: 5%;
+}
+.help{
+    display: flex;
+    flex-direction: row;
+    margin: auto 0px;
+}
+form {
+    background-repeat: no-repeat;
+    text-align: center;
+    width: 285px;
+    padding-top: 42px;
+    margin: 50px auto;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.4);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        border-radius: 10px;
+}
+
+.header {
+    color: #00A8F6;
+    font-weight: 700;
+    font-size: 28px;
+    padding-bottom: 15px;
+}
+
+.optional {
+    font-size: 13px;
+ 
+}
+
+#space {
+    padding: 1em;
+}
+
+.footer {
+    background: rgba(0, 0, 0, 0.45);
+    height: 45px;
+    border-radius: 0 0 4px 4px;
+    font-size: 12px;
+    margin-top: 88px;
+    padding-top: 3px;
+}
+
+.footer span {
+    color: #00A8F6;
+    font-weight: bold;
+}
+.footer p {
+    margin-top: 8px;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+a:hover {
+    color: rgb(225, 225, 225);
+}
+
+
+
+/* Fields and Button */
+
+.button {
+    width: 80%;
+    height: 42px;
+    margin: 13px 0px;
+    border-radius: 4px;
+    border: none;
+    outline: none;
+    background: #F2F3F5;
+    background-repeat: no-repeat;
+    background-position: 15px 17px;
+    text-indent: 17%;
+    font-family: inherit;
+    font-size: 16px;
+    color: #737373;
+}
+
+#submit {
+    background-color: #1b2735;
+    color: white;
+    margin-bottom: 8px;
+    text-indent: 0;
+    cursor: pointer;
+    transition: background .3s ease-in-out;
+}
+
+#submit:hover {
+    background-color: #00A8F6;
+}
+
+/* Username & Password Icons */
+
+#email {
+    background-image: url('https://static.tumblr.com/mnsbkhd/24dms3lei/male.png');
+}
+
+#password {
+    background-image: url('https://static.tumblr.com/mnsbkhd/5IMms3ldm/locked.png');
+}
+
+/* Checkbox */
+
+input[type='checkbox'] {
+    visibility: hidden;
+}
+
+input[type='checkbox']+label span {
+    display: inline-block;
+    background: inherit;
+    border: 2px solid #00A8F6;
+    border-radius: 35%;
+    margin: -1px 4px 0 0;
+    width: 10px;
+    height: 10px;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: background .3s ease-in-out;
+}
+
+input[type='checkbox']:checked+label span {
+    background: #00A8F6;
+    border: 2px solid #00A8F6;
+}
+
+@keyframes shake {
+
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(4px, 0, 0);
+    }
+}

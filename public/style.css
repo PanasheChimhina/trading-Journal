@@ -1,0 +1,36 @@
+body {
+    color: #dddfe2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    background-color: rgb(14, 14, 14);
+    /* background-image: linear-gradient(rgb(14, 14, 14), #060e16); */
+/* height: 200vh; */
+}
+
+label {
+    display: block;
+    margin: 0.1rem 2rem;
+    color: rgb(6, 32, 90);
+
+}
+/* #dashboard{
+    display: "flex"; 
+    flex-direction: "row"; 
+    max-width: 100%;
+     width: 1494px;
+     border: 1px dashed blueviolet
+} */
+/* and (min-width: 767px) and (max-width: 950px)*/
+/* @media screen and (max-width: 100px) {
+    .dashboard {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid blueviolet
+
+    }
+} */
+
