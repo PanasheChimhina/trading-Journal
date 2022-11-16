@@ -36,11 +36,11 @@ app.use(function (req, res, next) {
         .send('Not Found');
 });
 
-//const portNum = process.env.PORT || 3000;
+const portNum = process.env.PORT || 3000;
 
 // Start our server and tests!
-app.listen(3000, () => {
-    console.log(`Listening on port ${3000}`);
+app.listen(portNum, () => {
+    console.log(`Listening on port ${portNum}`);
 });
 
 module.exports = app; // For testing
