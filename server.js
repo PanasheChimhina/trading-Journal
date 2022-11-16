@@ -40,7 +40,7 @@ app.use(function (req, res, next) {
 
 // Start our server and tests!
 app.listen(process.env.PORT || 3000, () => {
-    console.log(`Listening on port ${portNum}`);
+    console.log(`Listening on port ${3000}`);
 });
 
 module.exports = app; // For testing
