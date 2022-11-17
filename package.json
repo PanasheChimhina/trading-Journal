@@ -2,7 +2,7 @@
   "name": "trading_journal",
   "version": "1.0.0",
   "description": "A web application that allow users to journal their trades.",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
