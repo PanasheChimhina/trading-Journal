@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
         {
-            "src": "./public/index.jsx",
+            "src": "./server.js",
             "use": "@now/node"
         }
     ],
