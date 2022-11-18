@@ -2,8 +2,8 @@
     "version": 2,
     "builds": [
         {
-            "src": "./public/index.jsx",
-            "use": "@now/node"
+            "src": "./public/server.js",
+            "use": "@vercel/node"
         }
     ],
     "routes": [
