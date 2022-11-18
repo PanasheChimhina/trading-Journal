@@ -2,13 +2,13 @@
   "name": "trading_journal",
   "version": "1.0.0",
   "description": "A web application that allow users to journal their trades.",
-  "main": "server.js",
+  "main": "index.js",
   "engines": {
     "node": "14.x"
   },
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [
     "Trading",
