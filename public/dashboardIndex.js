@@ -196,7 +196,7 @@ const MoreInfo = (props) => {
                         <h6 style={{ margin: "10px 10px 17px", textAlign: "center" }}>Strategy Optimisation Data</h6>
                         <div style={{ width: "100%", height: "65%", padding: "0px 10px" }}>
                             <ZoneThreeDivs heading="Trades " unit="with no errors" probabilityPercentage={props.tradeInfo.nomistakes} color="#A000BA" />
-                            <ZoneThreeDivs heading="Winning trades " unit="without erros" probabilityPercentage={props.tradeInfo.noMistakesWinsPercentage} color="#A000BA" />
+                            <ZoneThreeDivs heading="Winning trades " unit="without errors" probabilityPercentage={props.tradeInfo.noMistakesWinsPercentage} color="#A000BA" />
                         </div>
                     </div>
 
